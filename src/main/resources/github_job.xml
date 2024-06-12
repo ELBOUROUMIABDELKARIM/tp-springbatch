@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:batch="http://www.springframework.org/schema/batch"
+       xsi:schemaLocation="
+						http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/batch
+						http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+    <import resource="datasource.xml" />
+
+    <bean id="jobRegistry" class="org.springframework.batch.core.configuration.support.MapJobRegistry"/>
+    <!-- Job Launcher -->
+    <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+        <property name="jobRepository" ref="jobRepository"/>
+    </bean>
+
+    <bean id="githubItemProcessor" class="com.example.technomakers.springbatch.exercice.config.github.GithubItemProcessor" />
+    <bean id="githubItemReader" class="com.example.technomakers.springbatch.exercice.config.github.GithubItemReader" />
+    <bean id="githubItemWriter" class="com.example.technomakers.springbatch.exercice.config.github.GithubItemWriter" />
+
+    <bean id="stepListener" class="com.example.technomakers.springbatch.exercice.listener.StepListener" />
+    <bean id="jobListener" class="com.example.technomakers.springbatch.exercice.listener.JobListener" />
+
+    <batch:job id="githubJob" job-repository="jobRepository">
+        <batch:step id="step1">
+            <batch:tasklet>
+                <batch:chunk reader="githubItemReader" processor="githubItemProcessor" writer="githubItemWriter" commit-interval="20" />
+            </batch:tasklet>
+            <batch:listeners>
+                <batch:listener ref="stepListener" />
+            </batch:listeners>
+        </batch:step>
+        <batch:listeners>
+            <batch:listener ref="jobListener" />
+        </batch:listeners>
+    </batch:job>
+</beans>
